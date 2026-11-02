@@ -64,6 +64,10 @@ body.no-es .es{display:none}
 .steps li.on{border-color:var(--fg);background:var(--surface);box-shadow:3px 3px 0 var(--fg)}
 .steps li.ok{text-decoration:line-through;color:var(--muted);background:var(--ok-soft)}
 .steps li.ok .t{color:var(--muted)}
+.steps li .go{display:inline-block;margin-left:.45rem;font-family:var(--font-mono);font-size:.74rem;font-weight:700;text-decoration:none;color:#fff;background:var(--accent);border:2px solid var(--fg);border-radius:999px;padding:.08rem .5rem;white-space:nowrap;vertical-align:baseline;box-shadow:2px 2px 0 var(--fg)}
+.steps li .go:hover{filter:brightness(1.1)}
+.steps li .go:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--fg)}
+.steps li.ok .go{opacity:.5}
 .seg-timer{display:flex;align-items:center;gap:.6rem;border-top:2px dashed var(--line);padding-top:.7rem}
 .seg-timer .tt{font-family:var(--font-mono);font-size:1.6rem;font-weight:700;color:#fff;background:var(--fg);padding:.05rem .5rem;border-radius:6px;min-width:5.4rem;text-align:center}
 .seg-timer .tt.done{background:var(--ok)}
@@ -118,10 +122,10 @@ a{color:var(--accent);font-weight:700}
       <div class="seg-head"><span class="seg-num">1</span><span class="seg-min">25 min</span></div>
       <p class="seg-title">Open <span class="es">Apertura</span></p>
       <ul class="steps">
-        <li><span class="t">5 min</span><span>Bell ringer: agree or disagree + 4 sentences in your notebook <span class="es">Actividad de inicio: de acuerdo o en desacuerdo + 4 oraciones en tu cuaderno</span></span></li>
-        <li><span class="t">5 min</span><span>Draw it: two columns — one week of your $5 habit vs. the jar after a year <span class="es">Dibújalo: dos columnas — una semana de tu hábito de $5 vs. el frasco después de un año</span></span></li>
-        <li><span class="t">5 min</span><span>Hook: What do you buy almost every day? Then the 60-second snowball lab (two jars, six years) <span class="es">Gancho: ¿Qué compras casi todos los días? Luego el laboratorio de la bola de nieve de 60 segundos</span></span></li>
-        <li><span class="t">10 min</span><span>Video: compound interest in three minutes + 3 video checks <span class="es">Video: el interés compuesto en tres minutos + 3 comprobaciones</span></span></li>
+        <li><span class="t">5 min</span><span>Bell ringer: agree or disagree + 4 sentences in your notebook <span class="es">Actividad de inicio: de acuerdo o en desacuerdo + 4 oraciones en tu cuaderno</span></span><a class="go" target="_blank" rel="noopener" href="index.html#s-bell">Go ▸</a></li>
+        <li><span class="t">5 min</span><span>Draw it: two columns — one week of your $5 habit vs. the jar after a year <span class="es">Dibújalo: dos columnas — una semana de tu hábito de $5 vs. el frasco después de un año</span></span><a class="go" target="_blank" rel="noopener" href="index.html#s-draw">Go ▸</a></li>
+        <li><span class="t">5 min</span><span>Hook: What do you buy almost every day? Then the 60-second snowball lab (two jars, six years) <span class="es">Gancho: ¿Qué compras casi todos los días? Luego el laboratorio de la bola de nieve de 60 segundos</span></span><a class="go" target="_blank" rel="noopener" href="index.html#s-hook">Go ▸</a></li>
+        <li><span class="t">10 min</span><span>Video: compound interest in three minutes + 3 video checks <span class="es">Video: el interés compuesto en tres minutos + 3 comprobaciones</span></span><a class="go" target="_blank" rel="noopener" href="index.html#s-video">Go ▸</a></li>
       </ul>
       <div class="seg-timer"><span class="tt" id="t1">25:00</span><button data-t="1">Start</button></div>
     </section>
@@ -130,9 +134,9 @@ a{color:var(--accent);font-weight:700}
       <div class="seg-head"><span class="seg-num">2</span><span class="seg-min">30 min</span></div>
       <p class="seg-title">Read &amp; practice <span class="es">Lectura y práctica</span></p>
       <ul class="steps">
-        <li><span class="t">15 min</span><span>Listen and read all six paragraphs; stop and jot after 2, 4, and 6 <span class="es">Escucha y lee los seis párrafos; para y anota después del 2, 4 y 6</span></span></li>
-        <li><span class="t">8 min</span><span>Vocabulary notebook (10 highlighted words, money words / idea words) + match the meaning <span class="es">Cuaderno de vocabulario (10 palabras resaltadas) + unir el significado</span></span></li>
-        <li><span class="t">7 min</span><span>Grammar move: comparatives (<i>cheaper than</i>, <i>more expensive than</i>, <i>better than</i>) and <i>enough</i> / <i>too</i> <span class="es">Movida de gramática: comparativos y enough / too</span></span></li>
+        <li><span class="t">15 min</span><span>Listen and read all six paragraphs; stop and jot after 2, 4, and 6 <span class="es">Escucha y lee los seis párrafos; para y anota después del 2, 4 y 6</span></span><a class="go" target="_blank" rel="noopener" href="index.html#s-read">Go ▸</a></li>
+        <li><span class="t">8 min</span><span>Vocabulary notebook (10 highlighted words, money words / idea words) + match the meaning <span class="es">Cuaderno de vocabulario (10 palabras resaltadas) + unir el significado</span></span><a class="go" target="_blank" rel="noopener" href="index.html#s-vocab">Go ▸</a></li>
+        <li><span class="t">7 min</span><span>Grammar move: comparatives (<i>cheaper than</i>, <i>more expensive than</i>, <i>better than</i>) and <i>enough</i> / <i>too</i> <span class="es">Movida de gramática: comparativos y enough / too</span></span><a class="go" target="_blank" rel="noopener" href="index.html#grammar">Go ▸</a></li>
       </ul>
       <div class="seg-timer"><span class="tt" id="t2">30:00</span><button data-t="2">Start</button></div>
     </section>
@@ -141,9 +145,9 @@ a{color:var(--accent);font-weight:700}
       <div class="seg-head"><span class="seg-num">3</span><span class="seg-min">35 min</span></div>
       <p class="seg-title">Show what you know <span class="es">Demuestra lo que sabes</span></p>
       <ul class="steps">
-        <li><span class="t">10 min</span><span>My one-habit plan: name the habit, cut it in half, see it after 10 years; 3 sentences <span class="es">Mi plan de un hábito: nombra el hábito, redúcelo a la mitad, míralo a 10 años; 3 oraciones</span></span></li>
-        <li><span class="t">15 min</span><span>Test prep: growth-graph mini-lesson + 6 ELPA21-style questions with audio, one answer each <span class="es">Preparación: minilección de gráfica + 6 preguntas al estilo ELPA21 con audio</span></span></li>
-        <li><span class="t">10 min</span><span>Exit ticket: O·R·E·A·C paragraph, rubric to Level 4+, then Submit <span class="es">Boleto de salida: párrafo O·R·E·A·C, rúbrica a nivel 4+, luego Enviar</span></span></li>
+        <li><span class="t">10 min</span><span>My one-habit plan: name the habit, cut it in half, see it after 10 years; 3 sentences <span class="es">Mi plan de un hábito: nombra el hábito, redúcelo a la mitad, míralo a 10 años; 3 oraciones</span></span><a class="go" target="_blank" rel="noopener" href="index.html#s-plan">Go ▸</a></li>
+        <li><span class="t">15 min</span><span>Test prep: growth-graph mini-lesson + 6 ELPA21-style questions with audio, one answer each <span class="es">Preparación: minilección de gráfica + 6 preguntas al estilo ELPA21 con audio</span></span><a class="go" target="_blank" rel="noopener" href="index.html#s-test">Go ▸</a></li>
+        <li><span class="t">10 min</span><span>Exit ticket: O·R·E·A·C paragraph, rubric to Level 4+, then Submit <span class="es">Boleto de salida: párrafo O·R·E·A·C, rúbrica a nivel 4+, luego Enviar</span></span><a class="go" target="_blank" rel="noopener" href="index.html#s-exit">Go ▸</a></li>
       </ul>
       <div class="seg-timer"><span class="tt" id="t3">35:00</span><button data-t="3">Start</button></div>
     </section>
@@ -181,7 +185,8 @@ document.querySelectorAll('.seg').forEach(seg => {
     document.querySelectorAll('.seg').forEach(s => s.classList.remove('now'));
     if(!was){ seg.classList.add('now'); seg.classList.remove('done'); }
   });
-  seg.querySelectorAll('.steps li').forEach(li => li.onclick = () => {
+  seg.querySelectorAll('.steps li').forEach(li => li.onclick = (e) => {
+    if(e.target.closest('a')) return;
     li.classList.toggle('ok');
     const all = [...seg.querySelectorAll('.steps li')];
     if(all.every(x => x.classList.contains('ok'))){ seg.classList.add('done'); seg.classList.remove('now'); } else seg.classList.remove('done');

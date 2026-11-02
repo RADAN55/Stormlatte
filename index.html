@@ -720,6 +720,9 @@ body{padding-top:1.75rem}
 @media (min-width:960px){.rail{top:1.75rem!important;height:calc(100vh - 1.75rem)!important}}
 @media (prefers-reduced-motion:reduce){.topbar-fill{transition:none}}
 
+/* Anchor landings clear the top bar */
+#s-today,#s-bell,#s-draw,#s-hook,#s-video,#s-read,#s-vocab,#grammar,#s-plan,#s-test,#s-graph,#s-exit{scroll-margin-top:3.2rem}
+
 /* ===== Motion layer ===== */
 @keyframes stripeSlide{from{background-position:0 0}to{background-position:34px 0}}
 .topbar-fill{background-size:34px 34px;animation:stripeSlide 1.2s linear infinite}
@@ -845,7 +848,7 @@ h2.section-head:hover .h-ic{transform:rotate(-8deg) scale(1.08)}
     </ol>
     <p class="bell-note" id="bellNote">Example: <i>“I disagree that $5 a day is not enough money to matter because $5 every day becomes a lot in one year.”</i> After reading, come back and see if you would change any answer.</p>
 
-    <div class="draw">
+    <div class="draw" id="s-draw">
       <div class="bell-head">
         <div><div class="eyebrow">Part 2 · Draw it · 5 minutes</div><p class="bell-title">One week of a $5 habit vs. a jar</p></div>
         <div class="timer"><span id="timer2Text">5:00</span><button id="timer2Btn">Start</button></div>
