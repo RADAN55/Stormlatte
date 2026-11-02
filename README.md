@@ -2,8 +2,8 @@
 
 Interactive 90-minute EL lesson (grades 9–12, ELPA21 Levels 3–4), **Day 2 of the Money at 16 week** at Laurel High School. Part of the Storm Studio / EL Publishing resource ecosystem.
 
-**Live page:** https://radan55.github.io/stormlatte/
-**Agenda board:** https://radan55.github.io/stormlatte/agenda.html
+**Live page:** https://radan55.github.io/Stormlatte/
+**Agenda board:** https://radan55.github.io/Stormlatte/agenda.html
 **Day 1:** https://radan55.github.io/stormpaycheck/
 
 Tuesday, November 3, 2026 · Read and Infer · Comparatives, *enough*, *too*
