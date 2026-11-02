@@ -720,6 +720,18 @@ body{padding-top:1.75rem}
 @media (min-width:960px){.rail{top:1.75rem!important;height:calc(100vh - 1.75rem)!important}}
 @media (prefers-reduced-motion:reduce){.topbar-fill{transition:none}}
 
+/* Focus mode */
+.lockchip{position:relative;z-index:1;margin-left:auto;margin-right:.55rem;font-family:var(--font-mono);font-size:.66rem;font-weight:700;background:var(--accent);color:#fff;border:2px solid var(--fg);border-radius:999px;padding:.03rem .45rem;white-space:nowrap}
+.lockchip[hidden]{display:none}
+@keyframes chipFlash{0%,100%{opacity:1}50%{opacity:.35}}
+.lockchip.live{animation:chipFlash .7s linear infinite}
+body.locked{user-select:none;-webkit-user-select:none}
+body.locked input,body.locked textarea,body.locked .passage{user-select:text;-webkit-user-select:text}
+body.locked .topbar{border-bottom-color:var(--accent);box-shadow:inset 0 -4px 0 var(--accent)}
+.rail-ctl #focusBtn[aria-pressed="true"]{background:var(--accent);color:#fff}
+.focus-box .es{display:block;font-size:.85em;opacity:.85}
+body.no-es .focus-box .es{display:none}
+
 /* Back-to-agenda bar after each activity */
 .nextbar{display:flex;align-items:center;gap:.7rem;margin:-1rem 0 2.6rem;padding:.7rem .9rem;border:2px dashed var(--fg);border-radius:10px;background:var(--surface);text-decoration:none;color:var(--muted);font-family:var(--font-ui);font-size:.95rem;font-weight:600;transition:box-shadow .18s,transform .18s,background .25s}
 .nextbar .nb-tick{font-family:var(--font-mono);font-weight:700;width:1.7rem;height:1.7rem;display:grid;place-items:center;border:2px solid var(--fg);border-radius:50%;flex:none;background:var(--bg);color:var(--fg)}
@@ -793,12 +805,12 @@ h2.section-head:hover .h-ic{transform:rotate(-8deg) scale(1.08)}
   .item:hover,.bell:hover{box-shadow:var(--shadow)}
 }
 </style>
-<div class="topbar" id="topbar" role="progressbar" aria-label="Lesson progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="topbar-fill" id="topbarFill"></div><span class="topbar-txt" id="topbarTxt">0% · 0 of 10 · Next: Bell ringer</span></div>
+<div class="topbar" id="topbar" role="progressbar" aria-label="Lesson progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="topbar-fill" id="topbarFill"></div><span class="topbar-txt" id="topbarTxt">0% · 0 of 10 · Next: Bell ringer</span><span class="lockchip" id="fkChip" hidden></span></div>
 <div class="wrap">
   <nav class="rail" id="rail" aria-label="Lesson sections">
     <div class="rail-top">
       <div class="rail-brand"><span class="rail-dot"></span>STORM STUDIO<br><small>Money at 16 · Day 2</small></div>
-      <div class="rail-ctl"><a class="rail-agenda" href="agenda.html" target="_blank" rel="noopener" title="Agenda board">📋 Agenda</a><button id="themeBtn" aria-label="Light or dark mode">🌙</button><button id="langBtn" aria-pressed="true">ES</button></div>
+      <div class="rail-ctl"><a class="rail-agenda" href="agenda.html" target="_blank" rel="noopener" title="Agenda board">📋 Agenda</a><button id="focusBtn" aria-pressed="false" title="Focus mode">🔓</button><button id="themeBtn" aria-label="Light or dark mode">🌙</button><button id="langBtn" aria-pressed="true">ES</button></div>
     </div>
     <div class="prog" id="prog" aria-label="Lesson progress">
       <div class="prog-top" title="Tap to see each step"><span><b id="progPct">0%</b> <span id="progNext">Next: Bell ringer</span></span><span id="progCount">0 / 10</span></div>
@@ -1459,6 +1471,18 @@ h2.section-head:hover .h-ic{transform:rotate(-8deg) scale(1.08)}
     <p class="chart-note" id="submitNote" style="text-align:left">Finish your exit ticket to turn on Submit. It opens a short form with your answer already filled in.</p>
   </section>
   </main>
+</div>
+
+<div class="focus-overlay" id="fkOverlay" hidden role="dialog" aria-modal="true" aria-label="Focus mode">
+  <div class="focus-box">
+    <div class="focus-icon" id="fkIcon">👀</div>
+    <p class="focus-title" id="fkTitle">Eyes on the lesson</p>
+    <p class="focus-msg" id="fkMsg"></p>
+    <p class="focus-stat" id="fkStat"></p>
+    <button class="btn-primary" id="fkBack">Back to work · Volver al trabajo</button>
+    <form class="focus-form" id="fkForm"><input id="fkCode" inputmode="numeric" maxlength="6" placeholder="Code" autocomplete="off" aria-label="Code"><button type="submit" id="fkGo">Enter</button></form>
+    <p class="focus-err" id="fkErr"></p>
+  </div>
 </div>
 
 <div class="card" id="card" role="dialog" aria-live="polite" aria-label="Word definition">
@@ -2495,6 +2519,124 @@ document.getElementById('copyReport').onclick = async () => {
 })();
 
 setInterval(tickProgress, 1000); tickProgress();
+
+/* ===== Focus mode + away alarm ===== */
+(function(){
+  const ov = document.getElementById('fkOverlay'); if(!ov) return;
+  const btn = document.getElementById('focusBtn'), chip = document.getElementById('fkChip');
+  const icon = document.getElementById('fkIcon'), title = document.getElementById('fkTitle'), msg = document.getElementById('fkMsg');
+  const stat = document.getElementById('fkStat'), back = document.getElementById('fkBack'), form = document.getElementById('fkForm');
+  const code = document.getElementById('fkCode'), err = document.getElementById('fkErr');
+  const S = {on:false, code:'', leaves:0, sound:true};
+  try { Object.assign(S, JSON.parse(sessionStorage.getItem('latte-focus') || '{}')); } catch(e){}
+  const save = () => { try { sessionStorage.setItem('latte-focus', JSON.stringify(S)); } catch(e){} };
+  let mode = 'setup', ac = null, ring = null;
+
+  /* ---- alarm ---- */
+  function chirp(){
+    if(!S.sound) return;
+    try {
+      if(!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+      if(ac.state === 'suspended') ac.resume();
+      [988, 740, 988].forEach((f, i) => {
+        const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + i * 0.24;
+        o.type = 'square'; o.frequency.value = f;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(0.3, t + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.21);
+        o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + 0.23);
+      });
+    } catch(e){}
+  }
+  function alarmOn(){ if(ring) return; chirp(); ring = setInterval(chirp, 1700); }
+  function alarmOff(){ if(ring){ clearInterval(ring); ring = null; } }
+  function primeAudio(){ try { if(!ac) ac = new (window.AudioContext || window.webkitAudioContext)(); if(ac.state === 'suspended') ac.resume(); } catch(e){} }
+
+  /* ---- chrome ---- */
+  function paint(){
+    btn.textContent = S.on ? '🔒' : '🔓';
+    btn.setAttribute('aria-pressed', S.on ? 'true' : 'false');
+    btn.title = S.on ? 'Focus mode is on — tap to turn off' : 'Turn on focus mode';
+    document.body.classList.toggle('locked', S.on);
+    const away = !ov.hidden && mode === 'away';
+    chip.hidden = !(S.on || S.leaves);
+    chip.classList.toggle('live', away);
+    chip.textContent = (S.on ? '🔒 ' : '') + (S.leaves ? 'left ×' + S.leaves : 'focus');
+  }
+  function open(m){
+    mode = m; err.textContent = ''; code.value = ''; ov.hidden = false;
+    if(m === 'setup'){
+      icon.textContent = '🔒'; title.textContent = 'Turn on focus mode';
+      msg.innerHTML = 'The page goes full screen. If a student leaves this page, an alarm sounds on their Chromebook and the page keeps count.<span class="es" lang="es">La página pasa a pantalla completa. Si un estudiante sale de esta página, suena una alarma en su Chromebook y la página lleva la cuenta.</span>';
+      stat.textContent = 'Teacher: pick a code to turn it back off.';
+      code.placeholder = 'New code (3–6 digits)'; back.textContent = 'Cancel'; back.hidden = false;
+    } else if(m === 'away'){
+      icon.textContent = '👀'; title.textContent = 'Eyes on the lesson';
+      msg.innerHTML = 'You left the lesson page. Your teacher can hear this.<span class="es" lang="es">Saliste de la página de la lección. Tu maestro puede oír esto.</span>';
+      stat.textContent = `Left the page ${S.leaves} time${S.leaves === 1 ? '' : 's'} today.`;
+      code.placeholder = 'Teacher code'; back.textContent = 'Back to work · Volver al trabajo'; back.hidden = false;
+    } else {
+      icon.textContent = '🔓'; title.textContent = 'Turn off focus mode';
+      msg.innerHTML = 'Enter the teacher code.<span class="es" lang="es">Escribe el código del maestro.</span>';
+      stat.textContent = S.leaves ? `Left the page ${S.leaves} time${S.leaves === 1 ? '' : 's'} today.` : '';
+      code.placeholder = 'Teacher code'; back.textContent = 'Cancel'; back.hidden = false;
+    }
+    paint(); setTimeout(() => code.focus(), 60);
+  }
+  function close(){ ov.hidden = true; alarmOff(); paint(); }
+  function full(on){
+    try {
+      if(on && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+      if(!on && document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    } catch(e){}
+  }
+
+  btn.onclick = () => { primeAudio(); open(S.on ? 'unlock' : 'setup'); };
+  back.onclick = () => { if(mode === 'away'){ close(); full(S.on); } else close(); };
+  form.onsubmit = e => {
+    e.preventDefault();
+    const v = code.value.trim();
+    if(mode === 'setup'){
+      if(!/^\d{3,6}$/.test(v)){ err.textContent = 'Use 3 to 6 digits.'; code.classList.add('shake'); setTimeout(() => code.classList.remove('shake'), 400); return; }
+      S.on = true; S.code = v; save(); primeAudio(); close(); full(true);
+    } else {
+      if(v !== S.code){ err.textContent = 'That code is not right.'; code.classList.add('shake'); setTimeout(() => code.classList.remove('shake'), 400); return; }
+      S.on = false; save(); alarmOff(); close(); full(false);
+    }
+  };
+
+  /* ---- did they leave? ---- */
+  function left(){
+    if(!S.on || (!ov.hidden && mode === 'away')) return;
+    S.leaves++; save(); open('away'); alarmOn();
+  }
+  document.addEventListener('visibilitychange', () => {
+    if(document.hidden) left(); else if(S.on) alarmOff();
+  });
+  addEventListener('blur', () => {
+    const el = document.activeElement;
+    if(el && el.tagName === 'IFRAME') return;   // the video counts as staying
+    setTimeout(() => { if(document.hidden) left(); }, 120);
+  });
+  addEventListener('beforeunload', e => { if(S.on){ e.preventDefault(); e.returnValue = ''; } });
+  ['contextmenu','copy','cut'].forEach(ev => document.addEventListener(ev, e => {
+    if(!S.on) return;
+    const t = e.target;
+    if(t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
+    e.preventDefault();
+  }));
+
+  /* ---- put it in the report ---- */
+  if(typeof buildReport === 'function'){
+    const orig = buildReport;
+    buildReport = function(){
+      const t = orig() + `\nFocus mode: ${S.on ? 'ON' : 'off'} · left the page ${S.leaves} time${S.leaves === 1 ? '' : 's'}`;
+      document.getElementById('report').value = t;
+      return t;
+    };
+  }
+  paint();
+})();
 
 /* ===== Motion layer: reveals, counters, celebration ===== */
 (function(){
