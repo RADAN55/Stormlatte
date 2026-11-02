@@ -720,6 +720,20 @@ body{padding-top:1.75rem}
 @media (min-width:960px){.rail{top:1.75rem!important;height:calc(100vh - 1.75rem)!important}}
 @media (prefers-reduced-motion:reduce){.topbar-fill{transition:none}}
 
+/* Back-to-agenda bar after each activity */
+.nextbar{display:flex;align-items:center;gap:.7rem;margin:-1rem 0 2.6rem;padding:.7rem .9rem;border:2px dashed var(--fg);border-radius:10px;background:var(--surface);text-decoration:none;color:var(--muted);font-family:var(--font-ui);font-size:.95rem;font-weight:600;transition:box-shadow .18s,transform .18s,background .25s}
+.nextbar .nb-tick{font-family:var(--font-mono);font-weight:700;width:1.7rem;height:1.7rem;display:grid;place-items:center;border:2px solid var(--fg);border-radius:50%;flex:none;background:var(--bg);color:var(--fg)}
+.nextbar .nb-txt{min-width:0}
+.nextbar .nb-sub{font-weight:400;opacity:.85}
+.nextbar .es{display:block;font-size:.85em}
+body.no-es .nextbar .es{display:none}
+.nextbar.done{border-style:solid;background:var(--vocab-soft);color:var(--fg);box-shadow:4px 4px 0 var(--fg)}
+.nextbar.done .nb-tick{background:#2e7d4f;color:#fff}
+.nextbar.done:hover{transform:translate(1px,1px);box-shadow:2px 2px 0 var(--fg)}
+@keyframes nbPop{0%,100%{transform:none}40%{transform:translateY(-4px)}}
+.nextbar.fresh{animation:nbPop .55s ease-out}
+@media (prefers-reduced-motion:reduce){.nextbar.fresh{animation:none}}
+
 /* Anchor landings clear the top bar */
 #s-today,#s-bell,#s-draw,#s-hook,#s-video,#s-read,#s-vocab,#grammar,#s-plan,#s-test,#s-graph,#s-exit{scroll-margin-top:3.2rem}
 
@@ -2404,6 +2418,46 @@ document.getElementById('copyReport').onclick = async () => {
   try { await navigator.clipboard.writeText(t); b.textContent = '✓ Copied'; } catch(e){ document.getElementById('report').select(); b.textContent = 'Select and copy'; }
   setTimeout(() => { b.innerHTML = '📋 Copy my report <span class="es">Copiar mi reporte</span>'; }, 1500);
 };
+/* ===== Back-to-agenda bar after each activity ===== */
+(function(){
+  const MARKS = [
+    {sel:'#s-bell',  steps:[0],   label:'Bell ringer + Draw it', es:'Actividad de inicio + Dibújalo', next:'Hook + snowball lab', nextEs:'Gancho + laboratorio'},
+    {sel:'#s-hook',  steps:[1,2], label:'Hook + snowball lab',   es:'Gancho + laboratorio',          next:'Video', nextEs:'Video'},
+    {sel:'#s-video', steps:[3],   label:'Video',                 es:'Video',                          next:'Read & listen', nextEs:'Lee y escucha'},
+    {sel:'#passage', steps:[4],   label:'Read & listen',         es:'Lee y escucha',                  next:'My one-habit plan', nextEs:'Mi plan de un hábito'},
+    {sel:'#s-plan',  steps:[6],   label:'My one-habit plan',     es:'Mi plan de un hábito',          next:'Vocabulary', nextEs:'Vocabulario'},
+    {sel:'.vmatch',  steps:[5],   label:'Vocabulary',            es:'Vocabulario',                    next:'Grammar move', nextEs:'Movida de gramática'},
+    {sel:'#grammar', steps:[7],   label:'Grammar move',          es:'Movida de gramática',           next:'Test prep', nextEs:'Preparación para el examen'},
+    {sel:'.score',   steps:[8],   label:'Test prep',             es:'Preparación para el examen',    next:'Exit ticket', nextEs:'Boleto de salida'},
+    {sel:'#s-exit',  steps:[9],   label:'Exit ticket',           es:'Boleto de salida',               next:null, nextEs:null}
+  ];
+  const bars = [];
+  MARKS.forEach(m => {
+    const el = document.querySelector(m.sel); if(!el) return;
+    const a = document.createElement('a');
+    a.className = 'nextbar'; a.href = 'agenda.html';
+    a.innerHTML = '<span class="nb-tick">▸</span><span class="nb-txt"></span>';
+    el.insertAdjacentElement('afterend', a);
+    bars.push(Object.assign({}, m, {a:a, was:false}));
+  });
+  function paint(){
+    bars.forEach(b => {
+      let done = true;
+      b.steps.forEach(i => { try { if(!STEPS[i][1]()) done = false; } catch(e){ done = false; } });
+      b.a.classList.toggle('done', done);
+      b.a.querySelector('.nb-tick').textContent = done ? '✓' : '▸';
+      b.a.querySelector('.nb-txt').innerHTML = done
+        ? (b.next
+            ? `<b>${b.label} done.</b> Back to the agenda — next: <b>${b.next}</b> ▸<span class="es" lang="es">${b.es} listo. Vuelve a la agenda — sigue: ${b.nextEs}</span>`
+            : `<b>${b.label} done — you finished the lesson 🎉</b> Back to the agenda ▸<span class="es" lang="es">${b.es} listo — terminaste la lección. Vuelve a la agenda</span>`)
+        : `Back to the agenda <span class="nb-sub">· finish ${b.label} first</span><span class="es" lang="es">Vuelve a la agenda · primero termina: ${b.es}</span>`;
+      if(done && !b.was){ b.a.classList.add('fresh'); setTimeout(() => b.a.classList.remove('fresh'), 600); }
+      b.was = done;
+    });
+  }
+  paint(); setInterval(paint, 1000);
+})();
+
 setInterval(tickProgress, 1000); tickProgress();
 
 /* ===== Motion layer: reveals, counters, celebration ===== */
