@@ -723,13 +723,28 @@ body{padding-top:1.75rem}
 /* Back-to-agenda bar after each activity */
 .nextbar{display:flex;align-items:center;gap:.7rem;margin:-1rem 0 2.6rem;padding:.7rem .9rem;border:2px dashed var(--fg);border-radius:10px;background:var(--surface);text-decoration:none;color:var(--muted);font-family:var(--font-ui);font-size:.95rem;font-weight:600;transition:box-shadow .18s,transform .18s,background .25s}
 .nextbar .nb-tick{font-family:var(--font-mono);font-weight:700;width:1.7rem;height:1.7rem;display:grid;place-items:center;border:2px solid var(--fg);border-radius:50%;flex:none;background:var(--bg);color:var(--fg)}
+.nb-eyes{display:flex;gap:.3rem;flex:none;align-items:center}
+.eye{width:1.75rem;height:1.75rem;border-radius:50%;background:#fff;border:2.5px solid #111418;position:relative;overflow:hidden;box-shadow:inset 0 -3px 5px rgba(0,0,0,.14)}
+.eye .pupil{position:absolute;left:50%;top:50%;width:.72rem;height:.72rem;border-radius:50%;background:#111418;transform:translate(-50%,-50%);transition:transform .09s linear}
+.eye .pupil::after{content:"";position:absolute;top:14%;left:16%;width:30%;height:30%;border-radius:50%;background:rgba(255,255,255,.85)}
+.eye .lid{position:absolute;inset:-2px;background:var(--bg);transform:translateY(-100%);transition:transform .1s}
+.nextbar:not(.done) .eye{background:#f3f1ea}
+.nextbar:not(.done) .eye .pupil{width:.58rem;height:.58rem;background:#5a6270}
+@keyframes blink{0%,94%,100%{transform:translateY(-100%)}96%,98%{transform:translateY(0)}}
+.nextbar.done .eye .lid{animation:blink 5.5s infinite}
+.nextbar.done .eye:last-child .lid{animation-delay:.12s}
+@keyframes eyeWiggle{0%,100%{transform:rotate(0)}30%{transform:rotate(-7deg)}65%{transform:rotate(7deg)}}
+.nextbar.done .nb-eyes{animation:eyeWiggle 2.4s ease-in-out infinite}
 .nextbar .nb-txt{min-width:0}
 .nextbar .nb-sub{font-weight:400;opacity:.85}
 .nextbar .es{display:block;font-size:.85em}
 body.no-es .nextbar .es{display:none}
-.nextbar.done{border-style:solid;background:var(--vocab-soft);color:var(--fg);box-shadow:4px 4px 0 var(--fg)}
-.nextbar.done .nb-tick{background:#2e7d4f;color:#fff}
-.nextbar.done:hover{transform:translate(1px,1px);box-shadow:2px 2px 0 var(--fg)}
+.nextbar.done{border:3px solid var(--fg);background:var(--active);color:var(--fg);font-size:1.02rem;animation:nbGlow 1.7s ease-in-out infinite}
+.nextbar.done .es{color:var(--fg);opacity:.75}
+@keyframes nbGlow{0%,100%{box-shadow:6px 6px 0 var(--accent)}50%{box-shadow:6px 6px 0 var(--accent),0 0 0 7px color-mix(in srgb,var(--accent) 26%,transparent)}}
+.nextbar.done:hover{transform:translate(2px,2px);animation:none;box-shadow:3px 3px 0 var(--accent)}
+:root[data-theme="dark"] .nextbar.done{color:#fff}
+@media (prefers-reduced-motion:reduce){.nextbar.done{animation:none;box-shadow:6px 6px 0 var(--accent)}.nextbar.done .nb-eyes,.nextbar.done .eye .lid{animation:none}}
 @keyframes nbPop{0%,100%{transform:none}40%{transform:translateY(-4px)}}
 .nextbar.fresh{animation:nbPop .55s ease-out}
 @media (prefers-reduced-motion:reduce){.nextbar.fresh{animation:none}}
@@ -2436,7 +2451,7 @@ document.getElementById('copyReport').onclick = async () => {
     const el = document.querySelector(m.sel); if(!el) return;
     const a = document.createElement('a');
     a.className = 'nextbar'; a.href = 'agenda.html';
-    a.innerHTML = '<span class="nb-tick">▸</span><span class="nb-txt"></span>';
+    a.innerHTML = '<span class="nb-eyes" aria-hidden="true"><span class="eye"><span class="pupil"></span><span class="lid"></span></span><span class="eye"><span class="pupil"></span><span class="lid"></span></span></span><span class="nb-txt"></span>';
     el.insertAdjacentElement('afterend', a);
     bars.push(Object.assign({}, m, {a:a, was:false}));
   });
@@ -2445,7 +2460,7 @@ document.getElementById('copyReport').onclick = async () => {
       let done = true;
       b.steps.forEach(i => { try { if(!STEPS[i][1]()) done = false; } catch(e){ done = false; } });
       b.a.classList.toggle('done', done);
-      b.a.querySelector('.nb-tick').textContent = done ? '✓' : '▸';
+
       b.a.querySelector('.nb-txt').innerHTML = done
         ? (b.next
             ? `<b>${b.label} done.</b> Back to the agenda — next: <b>${b.next}</b> ▸<span class="es" lang="es">${b.es} listo. Vuelve a la agenda — sigue: ${b.nextEs}</span>`
@@ -2456,6 +2471,27 @@ document.getElementById('copyReport').onclick = async () => {
     });
   }
   paint(); setInterval(paint, 1000);
+
+  /* googly eyes follow the pointer (and drift while idle) */
+  const calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const eyes = () => document.querySelectorAll('.nb-eyes .eye');
+  let px = innerWidth / 2, py = innerHeight / 2, queued = false, moved = false;
+  function look(){
+    queued = false;
+    eyes().forEach(e => {
+      const r = e.getBoundingClientRect();
+      if(r.bottom < -200 || r.top > innerHeight + 200) return;
+      const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      const a = Math.atan2(py - cy, px - cx), d = Math.min(r.width * 0.22, Math.hypot(px - cx, py - cy) / 12);
+      const p = e.querySelector('.pupil');
+      p.style.transform = `translate(calc(-50% + ${(Math.cos(a) * d).toFixed(1)}px), calc(-50% + ${(Math.sin(a) * d).toFixed(1)}px))`;
+    });
+  }
+  function queue(){ if(queued) return; queued = true; requestAnimationFrame(look); }
+  addEventListener('pointermove', e => { px = e.clientX; py = e.clientY; moved = true; queue(); }, {passive:true});
+  addEventListener('scroll', queue, {passive:true});
+  if(!calm) setInterval(() => { if(!moved){ px = innerWidth * (0.2 + Math.random() * 0.6); py = innerHeight * (0.2 + Math.random() * 0.6); queue(); } moved = false; }, 2200);
+  setTimeout(look, 400);
 })();
 
 setInterval(tickProgress, 1000); tickProgress();
